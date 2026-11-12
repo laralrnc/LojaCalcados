@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Estoque de Calçados – protótipo</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f6ee;--sf:#fff;--ink:#1e2814;--mut:#5b6850;--ln:#d9e1cc;--a:#5f6f28;--ad:#3b4619;--al:#e4ebd0;--bad:#a23b2a;--bb:#f6e3df;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a0e;--sf:#1d2615;--ink:#e6edd6;--mut:#a3b08f;--ln:#34412a;--a:#a9bb5e;--ad:#c9d98a;--al:#2b361d;--bad:#e58a77;--bb:#3a211c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141a0e;--sf:#1d2615;--ink:#e6edd6;--mut:#a3b08f;--ln:#34412a;--a:#a9bb5e;--ad:#c9d98a;--al:#2b361d;--bad:#e58a77;--bb:#3a211c;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 Figtree,system-ui,sans-serif}
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+nav{background:var(--ad);padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+nav .lg{color:#fff;font-weight:700;font-size:17px;padding:4px 10px 14px}
+nav button{background:none;border:0;color:#dfe8c4;text-align:left;padding:9px 10px;border-radius:8px;font:inherit;cursor:pointer}
+nav button.on{background:#fff;color:#2c3514;font-weight:600}
+nav button:hover:not(.on){background:#4d5a23}
+nav .who{margin-top:auto;color:#cfdcaa;font-size:13px;padding:10px}
+nav .out{background:#fff;color:#2c3514;font-weight:600;text-align:center;margin-top:4px}
+nav .out:hover{background:var(--al)!important}
+main{padding:22px;min-width:0;max-width:1000px}
+h1{font-size:24px;margin:0 0 4px}h2{font-size:17px;margin:0 0 10px}
+.sub{color:var(--mut);margin:0 0 18px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:16px;margin-bottom:16px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.st b{display:block;font-size:28px;color:var(--ad)}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--ln);white-space:nowrap}
+th{color:var(--mut);font-weight:600}
+input,select,textarea{font:inherit;padding:8px 10px;border:1px solid var(--ln);border-radius:8px;background:var(--bg);color:var(--ink);min-width:0}
+.f{display:flex;flex-wrap:wrap;gap:10px;align-items:end}.f label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--mut)}
+.btn{background:var(--a);color:#fff;border:0;padding:9px 16px;border-radius:8px;font:inherit;font-weight:600;cursor:pointer}
+.btn.s{background:var(--al);color:var(--ad)}.btn.big{padding:13px 22px;font-size:16px}
+:focus-visible{outline:3px solid var(--a);outline-offset:2px}
+.b{padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:var(--al);color:var(--ad)}
+.b.bad{background:var(--bb);color:var(--bad)}
+.bar{height:10px;background:var(--a);border-radius:5px;min-width:3px}
+.lg2{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.rc{text-align:left;background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:14px;cursor:pointer;font:inherit;color:var(--ink)}
+.rc:hover{border-color:var(--a)}.rc b{display:block;color:var(--ad)}.rc span{font-size:13px;color:var(--mut)}
+.chip{display:inline-block;background:var(--al);color:var(--ad);padding:2px 10px;border-radius:99px;margin:2px;font-size:13px}
+#t{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ad);color:#fff;padding:10px 18px;border-radius:10px;display:none;z-index:9;max-width:90%}
+.lo{max-width:760px;margin:0 auto;padding:40px 20px}
+@media(max-width:760px){.app{grid-template-columns:1fr}nav{flex-direction:row;overflow-x:auto;align-items:center}nav .lg,nav .who{display:none}nav button{white-space:nowrap}main{padding:16px}}
+</style></head><body><div id="r"></div><div id="t" role="status"></div>
+<script>
+const $=s=>document.querySelector(s),R=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const ROLES={admin:['Administrador','Cadastra usuários e acessa todas as funções.',['painel','consulta','produtos','pdv','mov','alertas','rel','usuarios']],
+gerente:['Gerente de Loja','Cadastra, edita e exclui produtos; aprova baixas e ajustes.',['painel','consulta','produtos','pdv','mov','alertas','rel','usuarios']],
+vendedor:['Vendedor','Consulta rápida de disponibilidade por numeração e cor.',['painel','consulta']],
+caixa:['Caixa','Registra vendas e emite cupom fiscal.',['painel','consulta','pdv']],
+estoquista:['Estoquista','Registra entradas e quantidades para reposição.',['painel','consulta','mov','alertas']],
+comprador:['Comprador','Analisa a demanda da loja para decidir compras.',['painel','consulta','alertas','rel']]};
+const NM={painel:'Painel',consulta:'Consulta',produtos:'Produtos',pdv:'Venda',mov:'Movimentações',alertas:'Alertas',rel:'Relatórios',usuarios:'Usuários'};
+const M=[['Urban Run','Veloz','Tênis',62,139.9,['Preto','Branco']],['Trilha Pro','Montana','Bota',110,229.9,['Marrom','Preto']],['Leve','Praia Mar','Sandália',38,89.9,['Azul','Areia']],['Clássico','Ferrato','Sapato',90,199.9,['Preto','Caramelo']],['Casual Lona','Veloz','Tênis',50,119.9,['Cinza','Verde']],['Chelsea','Ferrato','Bota',120,259.9,['Preto','Marrom']]];
+const I=[];M.forEach((m,a)=>m[5].forEach((c,b)=>[37,38,39,40].forEach((n,k)=>{const i=I.length;I.push({id:i,mod:m[0],mar:m[1],cat:m[2],cor:c,num:n,ean:'789'+String(1000000+i*37).padStart(10,'0'),q:(i*7+k)%11%9,min:3,loc:'D'+(a+1)+'-C'+(b*4+k+1),cus:m[3],pre:m[4],sold:(i*5+a)%17+1})})));
+let U=null,V='painel',cart=[],ven=0,cup=122,G=[],F={q:'',n:''},movs=[],users=[['Ana Souza','Administrador'],['Bruno Lima','Gerente de Loja'],['Carla Dias','Vendedor'],['Diego Reis','Caixa'],['Elisa Nunes','Estoquista'],['Fábio Alves','Comprador']];
+const NMU={admin:'Ana Souza',gerente:'Bruno Lima',vendedor:'Carla Dias',caixa:'Diego Reis',estoquista:'Elisa Nunes',comprador:'Fábio Alves'};
+const mg=()=>['admin','gerente'].includes(U.k);
+const st=i=>i.q==0?['✕','Esgotado',1]:i.q<=i.min?['▲','Baixo',1]:['●','Disponível',0];
+const bd=i=>{const s=st(i);return `<span class="b ${s[2]?'bad':''}">${s[0]} ${s[1]}</span>`};
+const nm=i=>`${i.mod} · ${i.cor} · nº ${i.num}`;
+function toast(m){const t=$('#t');t.textContent=m;t.style.display='block';clearTimeout(toast.x);toast.x=setTimeout(()=>t.style.display='none',3200)}
+function log(ev,i,q,mot){movs.unshift({ev,i:nm(i),q,mot,por:NMU[U.k],h:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})})}
+function login(k){U={k};V='painel';draw()}
+function go(v){V=v;draw()}
+function sair(){U=null;cart=[];G=[];F={q:'',n:''};toast('Você saiu do sistema. Escolha um perfil para entrar de novo.');draw()}
+function draw(){
+if(!U){$('#r').innerHTML=`<div class="lo"><h1>Estoque de Calçados</h1><p class="sub">Protótipo do sistema. Escolha um perfil para entrar e veja como o menu e as funções mudam.</p><div class="lg2">${Object.entries(ROLES).map(([k,r])=>`<button class="rc" onclick="login('${k}')"><b>${r[0]}</b><span>${r[1]}</span></button>`).join('')}</div></div>`;return}
+const r=ROLES[U.k];
+$('#r').innerHTML=`<div class="app"><nav aria-label="Menu"><div class="lg">Estoque de Calçados</div>${r[2].map(m=>`<button class="${m==V?'on':''}" onclick="go('${m}')">${NM[m]}</button>`).join('')}<div class="who">${NMU[U.k]}<br>${r[0]}</div><button class="out" onclick="sair()">Sair e trocar usuário</button></nav><main id="m"></main></div>`;
+$('#m').innerHTML=S[V]();window.scrollTo(0,0)}
+const S={
+painel(){const lo=I.filter(i=>i.q<=i.min).length,tot=I.reduce((a,i)=>a+i.q,0);
+return `<h1>Olá, ${NMU[U.k].split(' ')[0]}</h1><p class="sub">${ROLES[U.k][1]}</p><div class="g"><div class="card st"><b>${tot}</b>pares em estoque</div><div class="card st"><b>${lo}</b>variações no mínimo ou abaixo</div><div class="card st"><b>${R(ven)}</b>vendas de hoje</div></div><div class="card"><h2>Últimas movimentações</h2>${movs.length?`<div class="tw"><table><tr><th>Hora</th><th>Evento</th><th>Item</th><th>Qtd</th><th>Responsável</th></tr>${movs.slice(0,6).map(m=>`<tr><td>${m.h}</td><td>${m.ev}</td><td>${m.i}</td><td>${m.q}</td><td>${m.por}</td></tr>`).join('')}</table></div>`:'<p class="sub">Nenhuma movimentação ainda. Registre uma venda ou uma entrada para ver o histórico aqui.</p>'}</div>`},
+consulta(){return `<h1>Consulta de estoque</h1><p class="sub">Disponibilidade em tempo real por modelo, cor e numeração.</p><div class="card"><div class="f"><label>Modelo, cor ou código de barras<input id="q" value="${F.q}" oninput="F.q=this.value;fl()" placeholder="Ex.: Urban Run"></label><label>Numeração<select id="n" onchange="F.n=this.value;fl()"><option value="">Todas</option>${[37,38,39,40].map(n=>`<option ${F.n==n?'selected':''}>${n}</option>`).join('')}</select></label></div></div><div class="card tw" id="rs">${tb()}</div>`},
+produtos(){const ms=[...new Set(I.map(i=>i.mod))];return `<h1>Cadastro de produtos</h1><p class="sub">Todo calçado precisa de ao menos uma variação de cor e numeração, com código de barras próprio.</p><div class="card"><div class="f"><label>Modelo<input id="pm"></label><label>Marca<input id="pk"></label><label>Categoria<select id="pc"><option>Tênis</option><option>Bota</option><option>Sandália</option><option>Sapato</option></select></label><label>Preço de custo<input id="pu" type="number" step="0.01" style="width:120px"></label><label>Preço de venda<input id="pv" type="number" step="0.01" style="width:120px"></label></div><h2 style="margin-top:16px">Grade</h2><div class="f"><label>Cor<input id="gc" style="width:130px"></label><label>Numeração<input id="gn" type="number" min="20" max="50" style="width:100px"></label><button class="btn s" onclick="addG()">Adicionar à grade</button></div><p id="gl">${gl()}</p><button class="btn" onclick="savep()">Salvar produto</button></div><div class="card"><h2>Modelos cadastrados</h2><div class="tw"><table><tr><th>Modelo</th><th>Marca</th><th>Categoria</th><th>Variações</th></tr>${ms.map(x=>{const v=I.filter(i=>i.mod==x);return `<tr><td>${x}</td><td>${v[0].mar}</td><td>${v[0].cat}</td><td>${v.length}</td></tr>`}).join('')}</table></div></div>`},
+pdv(){return `<h1>Venda</h1><p class="sub">Registre os itens, finalize e emita o cupom fiscal.</p><div class="card"><div class="f"><label>Item<select id="pi" style="max-width:340px">${I.map(i=>`<option value="${i.id}">${nm(i)} (${i.q})</option>`).join('')}</select></label><button class="btn s" onclick="add()">Adicionar</button></div></div><div class="card" id="ct">${ct()}</div>`},
+mov(){return `<h1>Movimentações</h1><p class="sub">Toda movimentação guarda quem fez e o motivo.${mg()?'':' Ajustes e baixas são feitos pela gerência.'}</p><div class="card"><div class="f"><label>Tipo<select id="mt">${['Entrada',...(mg()?['Ajuste','Baixa']:[])].map(t=>`<option>${t}</option>`).join('')}</select></label><label>Item<select id="mi" style="max-width:300px">${I.map(i=>`<option value="${i.id}">${nm(i)} (${i.q})</option>`).join('')}</select></label><label>Quantidade<input id="mq" type="number" min="0" style="width:100px"></label><label>Nota fiscal (entrada)<input id="mn" style="width:140px"></label><label>Motivo (ajuste ou baixa)<input id="mm" style="width:220px"></label><button class="btn" onclick="mv()">Registrar</button></div><p class="sub" style="margin:10px 0 0">Entrada soma ao saldo. Ajuste define o saldo contado. Baixa retira peças (avaria, perda ou fora de linha).</p></div><div class="card"><h2>Histórico</h2>${movs.length?`<div class="tw"><table><tr><th>Hora</th><th>Evento</th><th>Item</th><th>Qtd</th><th>Motivo</th><th>Responsável</th></tr>${movs.map(m=>`<tr><td>${m.h}</td><td>${m.ev}</td><td>${m.i}</td><td>${m.q}</td><td>${m.mot}</td><td>${m.por}</td></tr>`).join('')}</table></div>`:'<p class="sub">Sem registros ainda.</p>'}</div>`},
+alertas(){const a=I.filter(i=>i.q<=i.min).sort((x,y)=>x.q-y.q);return `<h1>Alertas de reposição</h1><p class="sub">${a.length} variações no estoque mínimo ou abaixo dele.</p><div class="card tw"><table><tr><th>Item</th><th>Saldo</th><th>Mínimo</th><th>Situação</th><th>Sugestão de reposição</th><th>Local</th></tr>${a.map(i=>`<tr><td>${nm(i)}</td><td>${i.q}</td><td>${i.min}</td><td>${bd(i)}</td><td>${i.min*2-i.q} pares</td><td>${i.loc}</td></tr>`).join('')}</table></div>`},
+rel(){const L=[...I].map(i=>({...i,rv:i.sold*i.pre})).sort((a,b)=>b.rv-a.rv),T=L.reduce((a,i)=>a+i.rv,0),C=I.reduce((a,i)=>a+i.sold*i.cus,0);let ac=0;const top=L.slice(0,10).map(i=>{ac+=i.rv;const p=ac/T;return {...i,c:p<=.5?'A':p<=.7?'B':'C'}}),mx=top[0].rv;
+return `<h1>Relatórios</h1><p class="sub">Apoio à decisão de compra, com dados de exemplo.</p><div class="g"><div class="card st"><b>${R(C)}</b>custo das vendas</div><div class="card st"><b>${R(T)}</b>vendas no período</div><div class="card st"><b>${((T-C)/T*100).toFixed(1)}%</b>margem de lucro</div></div><div class="card"><h2>Curva ABC: 10 calçados mais vendidos</h2><div class="tw"><table><tr><th>Item</th><th style="width:40%">Faturamento</th><th>Valor</th><th>Classe</th></tr>${top.map(i=>`<tr><td>${nm(i)}</td><td><div class="bar" style="width:${i.rv/mx*100}%"></div></td><td>${R(i.rv)}</td><td><span class="b">${i.c}</span></td></tr>`).join('')}</table></div></div>`},
+usuarios(){return `<h1>Usuários</h1><p class="sub">Cadastro e perfis de acesso.</p><div class="card"><div class="f"><label>Nome<input id="un"></label><label>Perfil<select id="up">${Object.values(ROLES).map(r=>`<option>${r[0]}</option>`).join('')}</select></label><button class="btn" onclick="addU()">Cadastrar usuário</button></div></div><div class="card tw"><table id="ut"><tr><th>Nome</th><th>Perfil</th></tr>${users.map(u=>`<tr><td>${u[0]}</td><td>${u[1]}</td></tr>`).join('')}</table></div>`}};
+function tb(){const q=F.q.toLowerCase(),L=I.filter(i=>(!q||(i.mod+' '+i.cor+' '+i.ean).toLowerCase().includes(q))&&(!F.n||i.num==F.n));
+return L.length?`<table><tr><th>Modelo</th><th>Cor</th><th>Nº</th><th>Qtd</th><th>Situação</th><th>Local</th><th>Preço</th>${mg()?'<th>Custo</th>':''}</tr>${L.map(i=>`<tr><td>${i.mod}</td><td>${i.cor}</td><td>${i.num}</td><td>${i.q}</td><td>${bd(i)}</td><td>${i.loc}</td><td>${R(i.pre)}</td>${mg()?`<td>${R(i.cus)}</td>`:''}</tr>`).join('')}</table>`:'<p class="sub">Nenhum item encontrado. Revise o modelo, a cor ou a numeração.</p>'}
+function fl(){$('#rs').innerHTML=tb()}
+function gl(){return G.length?G.map((g,k)=>`<span class="chip">${g[0]} · nº ${g[1]} <button onclick="G.splice(${k},1);$('#gl').innerHTML=gl()" aria-label="Remover" style="border:0;background:none;cursor:pointer;color:inherit">×</button></span>`).join(''):'<span class="sub">Nenhuma variação adicionada.</span>'}
+function addG(){const c=$('#gc').value.trim(),n=+$('#gn').value;if(!c||!n)return toast('Informe cor e numeração.');G.push([c,n]);$('#gc').value='';$('#gn').value='';$('#gl').innerHTML=gl()}
+function savep(){const m=$('#pm').value.trim(),k=$('#pk').value.trim(),u=+$('#pu').value,v=+$('#pv').value;
+if(!m||!k||!u||!v)return toast('Preencha modelo, marca e preços.');if(!G.length)return toast('Adicione ao menos uma variação de cor e numeração.');
+G.forEach(g=>{const i=I.length;I.push({id:i,mod:m,mar:k,cat:$('#pc').value,cor:g[0],num:g[1],ean:'789'+String(1000000+i*37).padStart(10,'0'),q:0,min:3,loc:'A-novo',cus:u,pre:v,sold:0})});G=[];toast('Produto salvo.');draw()}
+function ct(){const t=cart.reduce((a,c)=>a+c.q*I[c.id].pre,0);return `<h2>Itens da venda</h2>${cart.length?`<table>${cart.map((c,k)=>`<tr><td>${nm(I[c.id])}</td><td>${c.q} × ${R(I[c.id].pre)}</td><td><button class="btn s" onclick="cart.splice(${k},1);$('#ct').innerHTML=ct()">Remover</button></td></tr>`).join('')}</table>`:'<p class="sub">Nenhum item. Escolha um calçado e adicione.</p>'}<p><b style="font-size:20px">Total: ${R(t)}</b></p><button class="btn big" onclick="fin()">Finalizar venda e emitir cupom</button>`}
+function add(){const id=+$('#pi').value,c=cart.find(x=>x.id==id),q=(c?c.q:0)+1;if(q>I[id].q)return toast('Sem saldo para '+nm(I[id])+'.');c?c.q=q:cart.push({id,q:1});$('#ct').innerHTML=ct()}
+function fin(){if(!cart.length)return toast('Adicione ao menos um item para finalizar.');cart.forEach(c=>{I[c.id].q-=c.q;I[c.id].sold+=c.q;ven+=c.q*I[c.id].pre;log('Saída (venda)',I[c.id],c.q,'Venda no caixa')});cup++;cart=[];toast('Venda concluída. Cupom nº '+String(cup).padStart(6,'0'));draw()}
+function mv(){const t=$('#mt').value,i=I[+$('#mi').value],q=+$('#mq').value,mo=$('#mm').value.trim(),nf=$('#mn').value.trim();
+if(isNaN(q)||$('#mq').value==='')return toast('Informe a quantidade.');
+if(t=='Entrada'){if(!nf||q<1)return toast('Informe a nota fiscal e uma quantidade maior que zero.');i.q+=q;log('Entrada',i,q,'NF '+nf)}
+else{if(!mo)return toast('Informe o motivo. Ele é obrigatório em ajustes e baixas.');
+if(t=='Baixa'){if(q<1||q>i.q)return toast('A baixa precisa ser de 1 até o saldo atual ('+i.q+').');i.q-=q}else i.q=q;log(t,i,q,mo)}
+toast(t+' registrada.');draw()}
+function addU(){const n=$('#un').value.trim();if(!n)return toast('Informe o nome do usuário.');users.push([n,$('#up').value]);toast('Usuário cadastrado.');draw()}
+draw();
+</script></body></html>
